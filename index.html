@@ -229,12 +229,6 @@
   .stripe { position: absolute; top: 0; left: 0; right: 0; height: 8px; z-index: 2; background: repeating-linear-gradient(90deg, var(--gold) 0 48px, transparent 48px 64px); }
   .gold .stripe { background: repeating-linear-gradient(90deg, var(--brown) 0 48px, transparent 48px 64px); }
 
-  /* Speaker notes */
-  .notes { display: none; border-top: 1px dashed var(--line); padding-top: 12px; color: var(--muted); font-size: 0.8em; max-width: 90ch; }
-  .notes::before { content: "Speaker notes · "; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); font-size: 0.85em; }
-  .gold .notes { color: var(--brown); border-color: rgba(var(--brown-rgb), 0.4); }
-  .gold .notes::before { color: var(--brown); }
-  body.show-notes .notes { display: block; }
 
   /* Motion: visible at rest; entering a slide replays its moves. */
   @media (prefers-reduced-motion: no-preference) {
@@ -286,7 +280,6 @@
   <h1 class="rv" style="--i:1">Safe hardware. <span class="line2">Killer software.</span></h1>
   <p class="lede rv" style="--i:2;max-width:74ch">Standing shoulder to shoulder with Georgia Tech, Ohio State and the best universities in North America: our underdog strategy to win real money</p>
   <p class="meta rv" style="--i:3">Zachary D. Asher, PhD · WMU EcoCAR Lead Faculty Advisor</p>
-  <aside class="notes">No thanks, no bio, no agenda. Let the car loop for a beat and go straight to the next slide.</aside>
 </section>
 
 <!-- 2 Hook -->
@@ -296,7 +289,6 @@
     <div class="yes" style="--i:0">Agree</div>
     <div class="no" style="--i:1">Disagree</div>
   </div>
-  <aside class="notes">Read it, then ask for hands: agree, then disagree. Count them out loud and call out the split ("the computer science majors are nervous"). Invite one person from each side to say why in one sentence. Don't resolve it. Say: "Hold that thought. By the end you'll see which side we're betting on." The payoff is slide 8. Backups if you want a different split: "Self-driving cars will be safer than human drivers by 2030." or "A team of students can out-engineer teams with 30 years of experience."</aside>
 </section>
 
 <!-- 3 The field -->
@@ -315,7 +307,6 @@
     <div><b>20</b><span>universities in all</span></div>
     <div><b>WMU</b><span>the only Michigan team</span></div>
   </div>
-  <aside class="notes">For newcomers: EcoCAR is the Department of Energy's student vehicle competition, run by Argonne National Laboratory with GM, Stellantis and MathWorks. It is the 15th Advanced Vehicle Technology Competition since 1988. One of my favorite things about it: it puts WMU on the same stage as these schools. These are not the only teams; there are 20. These are the ones I see as our real competition, the ones we go head-to-head with. Georgia Tech, Virginia Tech and Penn State are on our GM track. Ohio State is on the Stellantis track, but all 20 teams compete head-to-head in the startup track, so yes, we get to take on Ohio. Of all 20 schools, we are the only one in Michigan. Photos: Matthew LaVere Photography for AVTC. Source: EcoCAR Key Messages, Aug 2026.</aside>
 </section>
 
 <!-- 3b Money -->
@@ -323,7 +314,6 @@
   <p class="money rv"><span data-count="150000" data-prefix="$">$150,000</span></p>
   <h2 class="rv" style="--i:1;max-width:none;color:var(--brown)">in prize money. <em style="color:var(--brown);text-decoration:underline;text-decoration-thickness:6px;text-underline-offset:8px">Every year.</em></h2>
   <p class="lede rv" style="--i:2;color:var(--brown)">$600,000 on the table over four years.</p>
-  <aside class="notes">Let this land. Each year about $150,000 in cash prizes is awarded to teams across the competition, at the awards ceremony at the year-end competition. Over four years that is roughly $600,000. On top of that, every team already receives $20,000 in seed money in Year 1 and $95,000 a year in sponsor support for student positions. We can't promise to win, and we don't need that pressure, but I want us competing for that money. Source: EcoCAR RFP Rev B, sections A-2.1 and B-1.</aside>
 </section>
 
 <!-- 4 Powertrain: their turf -->
@@ -343,7 +333,6 @@
     </div>
     <div class="photo wide kb rv" style="--i:2"><img src="vision-media/under-car.jpg" alt="A student inspecting the underside of a raised electric vehicle"></div>
   </div>
-  <aside class="notes">Honest and calm. We are at a huge disadvantage here and we say so. So the powertrain plan is the easiest possible approach that earns the points for the lowest risk. The rules call the unmodified front drive unit "a reliable baseline," and organizers approve every rear propulsion design on feasibility and risk, so simple wins that gate. These points are ours to lose, and we will not lose them. Lean on our local companies and WMU supporters, like Eaton (whose Marshall proving grounds we already use) and Intrepid Control Systems, for advice so we do very well on the powertrain side. Photo: EcoCAR stock imagery.</aside>
 </section>
 
 <!-- 5 Software: our turf -->
@@ -356,7 +345,6 @@
     <div class="axis"><span></span><div><span style="left:0">1988</span><span style="left:90.5%;transform:translateX(-50%)">2026</span><span style="right:0">2030</span></div></div>
   </div>
   <p class="rv" style="--i:2;font:900 clamp(28px,3vw,52px)/1.1 var(--font);color:var(--gold)">That's how we finish on top.</p>
-  <aside class="notes">The turn. Self-driving has been mild in past competitions: early series showed off sensor fusion, later ones added basic driver-assist features. Now the target is Level 4, a car that drives itself. The startup track is brand new for everyone this year. Nobody has decades of experience here. We have a self-driving research lab, industry connections, a real startup, and we are AI native.</aside>
 </section>
 
 <!-- 6 The points -->
@@ -375,7 +363,6 @@
     <div class="hot grow" style="flex:60;--i:1">Commercialization 60</div>
     <div class="dim grow" style="flex:60;--i:2">Project mgmt 60</div>
   </div>
-  <aside class="notes">Two kinds of points. Powertrain and hardware points (220 before the May competition) are mostly scored against a fixed checklist: a simple design, done completely and on time, earns nearly all of them, and so does every other competent team. That is why safe hardware is not a compromise. The head-to-head points are scored against the other teams, so they swing. 130 of the 190 head-to-head points are in self-driving and commercialization: a team that nails them pulls ahead, and a team that stumbles gets very few. Pause three seconds after 130. Source: EIC Team Dashboard, Sep 18 2026.</aside>
 </section>
 
 <!-- 7 Mantra -->
@@ -386,7 +373,6 @@
     <div class="rv" style="--i:4"><b>Killer software</b>AI is our superpower: better engineering, faster.</div>
     <div class="rv" style="--i:5"><b>Have fun</b>If it stops being fun, we change something.</div>
   </div>
-  <aside class="notes">The mantra, said slowly. "Killer software" includes the powertrain team: the propulsion controls that run our motor are software, and they get built AI fluent too.</aside>
 </section>
 
 <!-- 8 We do this for a living -->
@@ -409,7 +395,6 @@
       <figure class="photo kb rv" style="--i:4"><img src="vision-media/data-laptop.jpg" alt="A student collecting sensor data on a laptop inside a research car"></figure>
     </div>
   </div>
-  <aside class="notes">Payoff for the opening question: this is the side we are betting on. AI has taken down the gates to software development; it is the key that unlocks building software for most people. We embrace that world-changing opportunity and jump in with both feet. This is not about generating sloppy code nobody understands. We work faster, more efficiently and with better outcomes because we collaborate with AI. You still own and understand everything you ship. The last line is absolute: GM, sponsor and partner data never goes into an AI tool outside our own machines. Tell one personal story here, about 60 seconds, from the Automated Driving Assurance Lab: our research is proving that self-driving software stays safe across whole ranges of conditions, which is exactly what a buy-off ride tests. The RFP itself says AI will be "pivotal to success throughout all tracks" (section A-2.3). Photos: WMU (bumper and laptop: Paige Novak Photography).</aside>
 </section>
 
 <!-- 8b Overnight -->
@@ -421,7 +406,6 @@
   </div>
   <div class="tasks rv" style="--i:2"><span>Design</span><span>Modeling</span><span>Testing</span><span>Validation</span><span>Analysis</span></div>
   <p class="lede rv" style="--i:3;max-width:none">AI runs the experiments. We make the engineering calls. <strong style="color:var(--gold)">That's Silicon Valley's normal, and our north star.</strong></p>
-  <aside class="notes">Paint the picture. AI isn't only a tool you type into. It works alongside us through the whole process: it helps design, builds models, writes and runs tests, validates, and analyzes results. Every night, massive parallel autonomous simulations run on our GPU servers, and in the morning we read what broke. Each square here is one simulated drive; gold passed, orange found a problem for us to fix before the car ever does. The numbers on screen are illustrative, not measured. This is how the best software companies in Silicon Valley work, and that is the standard we hold ourselves to.</aside>
 </section>
 
 <!-- 9 PIT -->
@@ -442,7 +426,6 @@
       <div class="rv" style="--i:3;display:flex;align-items:center;gap:18px;flex-wrap:wrap"><img style="height:40px;width:auto" src="vision-media/outres-wordmark.svg" alt="OutRes"><span style="font-weight:800;font-size:1.15em">Test driving alone cannot prove safety.</span></div>
     </div>
   </div>
-  <aside class="notes">The startup track is brand new, and every other team will be role-playing a startup. Ours is real. Outlier Resilience proves self-driving software is safe in the conditions nobody tested. It has more than 120 customer discovery interviews, we are in talks with initial customers, and we plan first revenue in November 2027 from an NSF SBIR Phase I. I have the local business relationships (MEDC, SBDC, SmartZones, Newlab Detroit), I know how to pitch investors, and I know investors. Before this I founded Revision Autonomy, which employed three WMU alumni full-time at competitive salaries. The video is research from the Automated Driving Assurance Lab: at night, one network leaves its lane on every run; the other holds it.</aside>
 </section>
 
 <!-- 10 Michigan -->
@@ -464,7 +447,6 @@
       <figure class="photo kb rv" style="--i:4"><img src="vision-media/eaton-track-crop.jpg" alt="A pickup truck on the Eaton proving grounds paved test track"></figure>
     </div>
   </div>
-  <aside class="notes">We are the only Michigan school of the 20, and the final buy-off ride is on GM's Milford Proving Ground. Already with us: Eaton's proving grounds in Marshall (bottom right), plus Dana, Lubrizol, Parker Hannifin, DENSO, Gentex, Hitachi and Intertek; for the startup track, Newlab Detroit, MEDC, the SBDC and the SmartZones. Next up: the Intelligent Vehicle Expo in Novi, Oct 27–29. GM alone has hired about 300 EcoCAR alumni. Ask every member to make one industry contact a month and log it. Photos: WMU.</aside>
 </section>
 
 <!-- 11 Year 1 -->
@@ -486,7 +468,6 @@
   </div>
   <div class="chip rv" style="--i:3"><b id="days-left">52</b> days to our first big win</div>
   <p class="credit">Photo: “San Antonio blue hour” by Katie Haugland Bowen, CC BY 2.0</p>
-  <aside class="notes">The two architecture decisions are the big ones: self-driving architecture on Nov 20 (70 points, scored head-to-head) and powertrain architecture on Apr 1 (70 points, and a risk gate the organizers must approve). Celebrate every fall win out loud; early wins create belief for San Antonio. Both architecture reviews are 70 points; the others are 25–35 (Team Dashboard, Sep 18). The day count is from the talk date, Oct 7, to Nov 20.</aside>
 </section>
 
 <!-- 12 2030 -->
@@ -543,7 +524,6 @@
   </div>
   <p class="lede rv" style="--i:3;max-width:none">This is how we win: <strong style="color:var(--gold)">focus here, and execute.</strong></p>
   <p class="eco-line rv" style="--i:4">Also judged on energy efficiency and passenger comfort.</p>
-  <aside class="notes">Read slowly. "It's spring 2030. Two tests. First, the buy-off ride: our Blazer drives a judge through the city section of GM's Milford Proving Ground, with street signs, intersections and other vehicles moving around it, using the HD map we're given. Then the autonocross: no map at all. A huge blacktop, a course made of traffic cones, and one goal: as fast as possible, with nobody steering. Every line of code in that car was written by someone who walked into a room like this one not sure they belonged." In industry, a buy-off ride is when an engineer rides along and signs off that a feature is ready. The self-driving system is also judged on energy efficiency and consumer acceptance. They are not where we aim to win, but we build them into how we test every week so we never give those points away. And the buy-off ride is a safety sign-off, which is exactly what the Automated Driving Assurance Lab researches. That is a goal, not a promise.</aside>
 </section>
 
 <!-- 13 Rules -->
@@ -561,7 +541,6 @@
     </div>
     <div class="photo wide kb rv" style="--i:2"><img src="vision-media/wmu-lab.jpg" alt="Students working at computers in the WMU automotive lab beside research vehicles"></div>
   </div>
-  <aside class="notes">If a choice fits these five rules, make it; you don't need to ask. Say the mantra again and let the room finish it. Rule 5: we don't carry the pressure of the powerhouse programs, and that is a freedom. Let's have fun. The people on this team may be your friends for life. Every week ends with a fun check (one to five fingers); two low weeks in a row and we re-evaluate what we're doing. As Van Wilder put it: "Don't take life too seriously. You'll never get out of it alive." The full version lives on the one-page vision doc.</aside>
 </section>
 
 <!-- 16 Join -->
@@ -589,7 +568,6 @@
     <img src="vision-media/logos/intrepid.png" alt="Intrepid Control Systems">
   </div>
   <p class="lede rv" style="--i:5;max-width:none">Offers from Detroit to Silicon Valley. Any major, any year, any background. <strong style="color:var(--gold)">Find Jacob Russell after the talk to get started.</strong></p>
-  <aside class="notes">Winning means respect, from the other schools and from industry. The long-term outcome: the students on this team, right now, get snatched up by industry with competitive offers and opportunities all over the country, including Silicon Valley. I am the newly appointed chair of the WMU Silicon Valley Industry Advisory Board, so that door is open. The sponsors go well beyond the Department of Energy: GM, Stellantis, MathWorks, Caterpillar, Siemens, dSPACE, Bosch, Altec, Hesse Mechatronics and the Volta Foundation, plus companies like DENSO and Intrepid Control Systems, and they meet our students at every event. GM alone has hired about 300 EcoCAR alumni. The EcoCAR alumni network is incredible. Whoever you are, there is a place on this team: self-driving, AI and data, business and commercialization, powertrain and hardware, media and storytelling, industry and events. Ask the leads to stand: Dr. Rick Meyer (co-lead), Jacob Russell (project manager), Jonathan Girier-Dufournier (vehicle hardware), Charles Rodgers (self-driving), Menuka Ghalan (AI and commercialization), Adam Luck (marketing and communications), Cassie Poisson and Emily Holtz (undergraduate leads). Point people to Jacob to get started. Sources: salary from the EcoCAR Key Messages, Aug 2026 (4-year study, 2023–2026; AVTC's site says $12,500); GM hires from GM News, Apr 14 2026. Say "this is how you get noticed," never "you will get hired."</aside>
 </section>
 
 <!-- 16 Close -->
@@ -597,14 +575,12 @@
   <div class="stripe" aria-hidden="true"></div>
   <p class="vision rv">Be the team everyone learns from.</p>
   <p class="kicker rv" style="--i:1">Safe hardware. Killer software. Have fun.</p>
-  <aside class="notes">Take Q&amp;A with this slide up. Do not end on "Questions?" Close with: "Safe hardware. Killer software. Have fun. Dare to be great." Then walk off.</aside>
 </section>
 
 <nav class="hud" aria-label="Slide controls">
   <button type="button" id="prev" aria-label="Previous slide">&larr;</button>
   <span id="counter" aria-live="polite">1 / 17</span>
   <button type="button" id="next" aria-label="Next slide">&rarr;</button>
-  <button type="button" id="notes-toggle" aria-pressed="false">Notes</button>
 </nav>
 
 <script>
@@ -612,7 +588,6 @@
     var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
     var counter = document.getElementById("counter");
     var progress = document.getElementById("progress");
-    var notesBtn = document.getElementById("notes-toggle");
     var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     // Days to the Nov 20 design review.
@@ -723,19 +698,12 @@
     }
     document.getElementById("prev").addEventListener("click", function () { go(current() - 1); });
     document.getElementById("next").addEventListener("click", function () { go(current() + 1); });
-    notesBtn.addEventListener("click", function () {
-      var on = document.body.classList.toggle("show-notes");
-      notesBtn.setAttribute("aria-pressed", on ? "true" : "false");
-      try { localStorage.setItem("ecocar-vision-notes", on ? "1" : "0"); } catch (e) {}
-    });
-    try { if (localStorage.getItem("ecocar-vision-notes") === "1") { document.body.classList.add("show-notes"); notesBtn.setAttribute("aria-pressed", "true"); } } catch (e) {}
     document.addEventListener("keydown", function (e) {
       if (e.target.closest && e.target.closest("button")) { if (e.key === " " || e.key === "Enter") return; }
       if (["ArrowRight", "ArrowDown", "PageDown", " "].indexOf(e.key) > -1) { e.preventDefault(); go(current() + 1); }
       else if (["ArrowLeft", "ArrowUp", "PageUp"].indexOf(e.key) > -1) { e.preventDefault(); go(current() - 1); }
       else if (e.key === "Home") { e.preventDefault(); go(0); }
       else if (e.key === "End") { e.preventDefault(); go(slides.length - 1); }
-      else if (e.key === "n" || e.key === "N") { notesBtn.click(); }
     });
     window.addEventListener("scroll", update, { passive: true });
     update();
