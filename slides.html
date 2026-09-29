@@ -1,0 +1,736 @@
+<title>Safe Hardware, Killer Software</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,800;1,900&display=swap">
+<style>
+  /* WMU brand: Gold 7406 #F1C500, Brown 4625 #532E1F, white; Montserrat only. One deliberate dark-brown stage look. */
+  :root {
+    color-scheme: dark;
+    --brown: #532E1F;
+    --brown-rgb: 83, 46, 31;
+    --night: #2b170f;
+    --night-rgb: 43, 23, 15;
+    --panel: rgba(0, 0, 0, 0.22);
+    --line: rgba(255, 255, 255, 0.16);
+    --ink: #ffffff;
+    --muted: #d6d0ca;
+    --soft: #b4aea7;
+    --gold: #F1C500;
+    --font: "Montserrat", Arial, "Helvetica Neue", sans-serif;
+  }
+  html { scroll-snap-type: y mandatory; }
+  body { background: var(--brown); color: var(--ink); font: 400 clamp(16px, 1.3vw, 22px)/1.5 var(--font); margin: 0; }
+  img, video { max-width: 100%; display: block; }
+  figure { margin: 0; }
+
+  .slide {
+    min-height: 100vh; min-height: 100dvh;
+    scroll-snap-align: start;
+    display: flex; flex-direction: column; justify-content: center;
+    gap: clamp(16px, 2.8vh, 36px);
+    padding-block: clamp(40px, 7vh, 84px);
+    padding-inline: max(16px, 6vw);
+    position: relative; box-sizing: border-box; overflow: hidden;
+    background: var(--brown);
+  }
+  .slide.night { background: var(--night); }
+  .slide.gold { background: var(--gold); color: var(--brown); }
+  .slide > * { position: relative; z-index: 1; }
+
+  h1, h2 { font-family: var(--font); margin: 0; text-wrap: balance; }
+  h1 { font-weight: 900; font-style: italic; text-transform: uppercase; font-size: clamp(52px, 8.6vw, 156px); line-height: 0.9; letter-spacing: -0.02em; }
+  h2 { font-weight: 800; font-size: clamp(34px, 4.5vw, 76px); line-height: 1.03; letter-spacing: -0.015em; max-width: 26ch; }
+  h1 em, h2 em { font-style: inherit; color: var(--gold); }
+  p { margin: 0; max-width: 60ch; }
+  .lede { font-size: 1.25em; font-weight: 600; max-width: 52ch; }
+  .muted { color: var(--muted); }
+
+  .grid { display: grid; gap: clamp(14px, 2vw, 28px); }
+  .g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 820px) { .g2, .g3 { grid-template-columns: 1fr; } }
+
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(20px, 4vw, 64px); align-items: center; }
+  .split .copy { display: flex; flex-direction: column; gap: clamp(16px, 2.6vh, 30px); }
+  @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+  .photo { position: relative; overflow: hidden; background: var(--night); max-height: 68vh; }
+  .photo img, .photo video { width: 100%; height: 100%; object-fit: cover; }
+  .photo.wide { aspect-ratio: 3 / 2; }
+
+  /* Three-photo mosaic with a fixed height, so nothing spills off the slide */
+  .mosaic { display: grid; grid-template-columns: 1.6fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; height: min(62vh, 560px); }
+  .mosaic { width: 100%; }
+  .mosaic .photo { max-height: none; height: 100%; min-width: 0; }
+  .mosaic .photo img { position: absolute; inset: 0; }
+  .mosaic .photo:first-child { grid-row: 1 / 3; }
+  .mosaic.top { grid-template-columns: 1fr 1fr; grid-template-rows: 1.4fr 1fr; }
+  .mosaic.top .photo:first-child { grid-row: auto; grid-column: 1 / 3; }
+  @media (max-width: 900px) { .mosaic { height: 56vh; } }
+
+  .bleed { position: absolute; inset: 0; z-index: 0; }
+  .bleed img, .bleed video { width: 100%; height: 100%; object-fit: cover; max-width: none; }
+  .bleed::after { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgba(var(--night-rgb), 0.95) 0%, rgba(var(--night-rgb), 0.65) 42%, rgba(var(--night-rgb), 0.05) 82%); }
+
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat b { font: 900 clamp(46px, 5.4vw, 92px)/0.95 var(--font); color: var(--gold); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+  .stat span { color: var(--muted); font-weight: 600; }
+
+  ul.lines { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; font-size: 1.2em; font-weight: 700; }
+  ul.lines li { padding-left: 1.2em; position: relative; }
+  ul.lines li::before { content: ""; position: absolute; left: 0; top: 0.62em; width: 0.6em; height: 4px; background: var(--gold); }
+
+  /* Title */
+  .brandbar { position: absolute; top: clamp(24px, 5vh, 52px); left: max(16px, 6vw); right: max(16px, 6vw); display: flex; justify-content: space-between; align-items: center; gap: 20px; z-index: 2; }
+  .brandbar .wmu { height: clamp(44px, 5.5vw, 76px); width: auto; }
+  .brandbar .eco { height: clamp(26px, 3vw, 42px); width: auto; }
+  .bottom { justify-content: flex-end; }
+  .meta { font: 700 0.95em/1.4 var(--font); color: var(--muted); }
+  h1 .line2 { display: block; color: var(--gold); }
+
+  /* Hook */
+  .statement { font: 900 clamp(38px, 5.6vw, 98px)/1.02 var(--font); letter-spacing: -0.02em; max-width: 17ch; text-wrap: balance; }
+  .vote { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .vote div { padding: clamp(18px, 3vh, 34px) 20px; font: 900 clamp(34px, 4.6vw, 80px)/1 var(--font); font-style: italic; text-transform: uppercase; text-align: center; }
+  .vote .yes { border: 4px solid var(--gold); color: var(--gold); }
+  .vote .no { border: 4px solid var(--gold); color: var(--gold); }
+
+  /* The field */
+  .teams { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+  .teams figure { margin: 0; position: relative; aspect-ratio: 25 / 14; overflow: hidden; border: 3px solid transparent; }
+  .teams img { width: 100%; height: 100%; object-fit: cover; }
+  .teams figcaption { position: absolute; left: 0; right: 0; bottom: 0; padding: 18px 10px 8px; font-weight: 800; font-size: clamp(13px, 1.1vw, 19px); line-height: 1.15; background: linear-gradient(0deg, rgba(var(--night-rgb), 0.95), transparent); }
+  .teams figure.us { border-color: var(--gold); }
+  .teams figure.us figcaption { color: var(--gold); }
+  @media (max-width: 820px) { .teams { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .facts { display: flex; flex-wrap: wrap; gap: 10px 40px; }
+  .facts div b { font: 900 clamp(30px, 3vw, 52px)/1 var(--font); color: var(--gold); display: block; font-variant-numeric: tabular-nums; }
+  .facts div span { font-weight: 700; color: var(--muted); }
+
+  /* Turf timeline */
+  .turf { display: grid; gap: 10px; }
+  .turf .row { display: grid; grid-template-columns: 9.5em minmax(0, 1fr); gap: 14px; align-items: center; }
+  .turf .name { font-weight: 800; }
+  .turf .track { position: relative; height: clamp(30px, 4.4vh, 44px); background: rgba(255,255,255,0.06); }
+  .turf .bar { position: absolute; top: 0; bottom: 0; right: 0; display: flex; align-items: center; padding-left: 12px; font-weight: 800; font-size: 0.85em; white-space: nowrap; transform-origin: right; }
+  .turf .bar.dim { background: rgba(255,255,255,0.22); }
+  .turf .bar.hot { background: var(--gold); color: var(--brown); }
+  .turf .bar.faint { background: repeating-linear-gradient(135deg, rgba(255,255,255,0.14) 0 6px, rgba(255,255,255,0.05) 6px 12px); color: var(--muted); font-weight: 700; }
+  .turf .axis { display: grid; grid-template-columns: 9.5em minmax(0, 1fr); gap: 14px; }
+  .turf .axis div { position: relative; height: 1.4em; font-weight: 700; font-size: 0.8em; color: var(--soft); }
+  .turf .axis div span { position: absolute; top: 0; }
+  @media (max-width: 700px) { .turf .row, .turf .axis { grid-template-columns: 1fr; } }
+
+  /* Points */
+  .hero-num { font: 900 clamp(100px, 16vw, 270px)/0.85 var(--font); letter-spacing: -0.04em; color: var(--gold); }
+  .hero-num small { font-size: 0.3em; color: var(--ink); letter-spacing: -0.01em; }
+  .points-bar { display: flex; height: clamp(46px, 6vh, 70px); gap: 4px; }
+  .points-bar div { display: flex; align-items: center; padding-inline: 14px; font: 800 clamp(14px, 1.2vw, 20px)/1.1 var(--font); transform-origin: left; overflow: hidden; white-space: nowrap; }
+  .points-bar .hot { background: var(--gold); color: var(--brown); }
+  .points-bar .dim { background: rgba(255,255,255,0.18); }
+
+  .pt-note { display: flex; align-items: baseline; gap: 18px; border-top: 1px solid var(--line); padding-top: 14px; max-width: 60em; }
+  .pt-note b { font: 900 clamp(40px, 4.4vw, 76px)/1 var(--font); color: var(--ink); font-variant-numeric: tabular-nums; }
+  .pt-note span { font-weight: 600; color: var(--muted); font-size: 1.1em; }
+  .pt-note strong { color: var(--gold); }
+  .money { margin: 0; font: 900 clamp(90px, 16vw, 280px)/0.85 var(--font); letter-spacing: -0.045em; color: var(--brown); font-variant-numeric: tabular-nums; }
+  .tier { display: grid; grid-template-columns: clamp(230px, 27vw, 440px) minmax(0, 1fr); gap: clamp(14px, 2vw, 28px); align-items: center; border-bottom: 1px solid var(--line); padding-bottom: 10px; font-size: clamp(16px, 1.3vw, 22px); }
+  .tier-num { font: 900 clamp(64px, 8vw, 140px)/0.9 var(--font); letter-spacing: -0.04em; font-variant-numeric: tabular-nums; display: flex; align-items: baseline; gap: 10px; white-space: nowrap; }
+  @media (max-width: 700px) { .tier { grid-template-columns: 1fr; } }
+  .tier-num small { font-size: 0.3em; letter-spacing: -0.01em; color: var(--ink); }
+  .tier-num.dim { color: var(--soft); }
+  .tier-num.hot { color: var(--gold); }
+  .tier b { display: block; font-weight: 800; font-size: 1.2em; }
+  .tier > div:last-child span { color: var(--muted); font-weight: 600; }
+  /* Mantra */
+  .mantra { margin: 0; display: grid; justify-items: start; gap: clamp(6px, 1vh, 12px); }
+  .mantra span { white-space: nowrap; font: 900 clamp(34px, 5.8vw, 116px)/1 var(--font); font-style: italic; text-transform: uppercase; letter-spacing: -0.02em; padding: 0.05em 0.2em 0.1em 0.12em; }
+  .mantra span:nth-child(1), .mantra span:nth-child(3) { color: var(--brown); padding-left: 0; }
+  .mantra span:nth-child(2) { background: var(--brown); color: var(--gold); }
+  .mantra-notes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .mantra-notes div { background: var(--brown); color: var(--ink); padding: 14px 18px; font-weight: 600; }
+  .mantra-notes b { display: block; color: var(--gold); font-weight: 800; margin-bottom: 2px; }
+  @media (max-width: 820px) { .mantra-notes { grid-template-columns: 1fr; } }
+
+  /* Year 1 road */
+  .rail { height: 8px; background: rgba(255,255,255,0.15); position: relative; margin-top: 12px; }
+  .rail i { position: absolute; inset: 0; background: linear-gradient(90deg, var(--gold) 0 30%, rgba(241,197,0,0.5) 30% 100%); transform-origin: left; }
+  .stops { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)) minmax(0, 1.4fr); gap: 8px; margin-top: -19px; }
+  .stop { display: flex; flex-direction: column; gap: 4px; }
+  .stop .pin { width: 30px; height: 30px; border-radius: 50%; background: var(--night); border: 4px solid var(--gold); }
+  .stop.spring .pin { border-color: rgba(241,197,0,0.55); }
+  .stop .d { font-weight: 700; font-size: 0.8em; color: var(--soft); }
+  .stop .w { font-weight: 800; line-height: 1.2; }
+  .stop .p { font: 900 1.5em/1 var(--font); color: var(--gold); }
+  .stop.final .pin { width: 44px; height: 44px; margin-top: -7px; background: var(--gold); }
+  .stop.final .w { color: var(--gold); font-size: 1.15em; }
+  .phase { display: flex; justify-content: space-between; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.72em; color: var(--soft); }
+  .phase span:first-child { color: var(--gold); }
+  .chip { display: inline-flex; align-self: flex-start; gap: 10px; align-items: baseline; border: 2px solid var(--gold); padding: 8px 14px; font-weight: 700; }
+  .chip b { color: var(--gold); font-size: 1.5em; font-weight: 900; font-variant-numeric: tabular-nums; }
+  @media (max-width: 820px) { .stops { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 16px; } .rail { display: none; } }
+
+  /* Finale: two animated panels */
+  .events { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(12px, 2vw, 24px); }
+  .event { display: flex; flex-direction: column; gap: 10px; }
+  .event .view { position: relative; background: #1b100b; }
+  .event svg { width: 100%; height: min(40vh, 360px); display: block; }
+  .event .tag { position: absolute; left: 12px; top: 10px; font-weight: 800; font-size: 0.72em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--soft); }
+  .event .timer { position: absolute; right: 12px; top: 8px; font: 900 clamp(20px, 2vw, 34px)/1 var(--font); color: var(--gold); font-variant-numeric: tabular-nums; }
+  .event b { font: 900 clamp(24px, 2.6vw, 44px)/1 var(--font); font-style: italic; text-transform: uppercase; }
+  .event span.cap { color: var(--muted); font-weight: 600; }
+  .eco-line { font-weight: 700; color: var(--muted); }
+  .eco-line strong { color: var(--gold); }
+  @media (max-width: 820px) { .events { grid-template-columns: 1fr; } }
+
+  .proof { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px; }
+  .proof div { border-left: 4px solid var(--gold); padding-left: 12px; display: flex; flex-direction: column; }
+  .proof b { font: 900 clamp(30px, 3.2vw, 54px)/1 var(--font); color: var(--gold); font-variant-numeric: tabular-nums; }
+  .proof span { font-weight: 600; color: var(--muted); }
+  .farm { background: #1b100b; padding: 14px; display: grid; gap: 12px; }
+  .farm-head { display: flex; flex-wrap: wrap; gap: 8px 32px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .farm-head #farm-clock { color: var(--ink); font-weight: 900; }
+  .farm-head b { color: var(--gold); font-weight: 900; }
+  .cells { display: grid; grid-template-columns: repeat(32, minmax(0, 1fr)); gap: 4px; }
+  .cells i { aspect-ratio: 1; display: block; background: rgba(255,255,255,0.08); }
+  .cells i.run { background: rgba(255,255,255,0.35); }
+  .cells i.ok { background: var(--gold); }
+  .cells i.bug { background: #E56849; }
+  @media (max-width: 700px) { .cells { grid-template-columns: repeat(16, minmax(0, 1fr)); } }
+  .tasks { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tasks span { border: 2px solid var(--gold); color: var(--gold); padding: 6px 14px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.85em; }
+  /* Rules */
+  .rules { list-style: none; margin: 0; padding: 0; display: grid; }
+  .rules li { font: 800 clamp(20px, 2.1vw, 34px)/1.15 var(--font); padding: 11px 0; border-bottom: 1px solid var(--line); display: flex; gap: 16px; align-items: baseline; }
+  .rules li b { color: var(--gold); font-weight: 900; font-size: 0.7em; min-width: 1.2em; }
+
+  /* Join */
+  .roles { display: flex; flex-wrap: wrap; gap: 8px; }
+  .roles span { border: 1px solid var(--line); background: var(--panel); padding: 8px 12px; font-weight: 700; }
+  .qr { width: clamp(120px, 11vw, 180px); background: #fff; padding: 8px; }
+  .ask-row { display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+  .people { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 0.8em; color: var(--muted); max-width: 70ch; }
+  .people b { color: var(--ink); font-weight: 700; }
+  .fill-in { font-weight: 800; color: var(--gold); }
+
+  .logos { background: #ffffff; padding: clamp(16px, 2.6vh, 28px) clamp(18px, 2.4vw, 40px); display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: center; justify-items: center; gap: clamp(16px, 2.6vh, 30px) clamp(14px, 2vw, 32px); }
+  @media (max-width: 820px) { .logos { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+  .logos img { height: clamp(26px, 4.6vh, 50px); width: auto; max-width: 100%; object-fit: contain; }
+  .logos img[src*="gm.svg"], .logos img[src*="caterpillar"] { height: clamp(40px, 7vh, 72px); }
+  .bleed.sa::after { background: linear-gradient(180deg, rgba(var(--night-rgb), 0.93) 0%, rgba(var(--night-rgb), 0.82) 55%, rgba(var(--night-rgb), 0.45) 100%); }
+  .credit { position: absolute; left: max(16px, 6vw); bottom: 10px; font-size: 0.6em; color: var(--soft); z-index: 1; }
+  /* Close */
+  .vision { font: 900 clamp(46px, 7.6vw, 132px)/0.98 var(--font); letter-spacing: -0.025em; margin: 0; max-width: 13ch; text-wrap: balance; }
+  .gold .kicker { font: 900 clamp(22px, 2.4vw, 40px)/1.1 var(--font); font-style: italic; text-transform: uppercase; }
+  .stripe { position: absolute; top: 0; left: 0; right: 0; height: 8px; z-index: 2; background: repeating-linear-gradient(90deg, var(--gold) 0 48px, transparent 48px 64px); }
+  .gold .stripe { background: repeating-linear-gradient(90deg, var(--brown) 0 48px, transparent 48px 64px); }
+
+  /* Speaker notes */
+  .notes { display: none; border-top: 1px dashed var(--line); padding-top: 12px; color: var(--muted); font-size: 0.8em; max-width: 90ch; }
+  .notes::before { content: "Speaker notes · "; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--gold); font-size: 0.85em; }
+  .gold .notes { color: var(--brown); border-color: rgba(var(--brown-rgb), 0.4); }
+  .gold .notes::before { color: var(--brown); }
+  body.show-notes .notes { display: block; }
+
+  /* Motion: visible at rest; entering a slide replays its moves. */
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+    .slide.active .rv { animation: rise .7s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(var(--i, 0) * 120ms); }
+    .slide.active .grow { animation: grow 1.2s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(300ms + var(--i, 0) * 160ms); }
+    .slide.active .grow-r { animation: grow 1.3s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(400ms + var(--i, 0) * 350ms); }
+    .slide.active .kb img, .slide.active .kb video { animation: kb 16s ease-out both; }
+    .slide.active .teams figure { animation: rise .6s cubic-bezier(.2,.7,.2,1) both; animation-delay: calc(150ms + var(--i, 0) * 90ms); }
+    .slide.active .teams figure.us { animation: rise .6s cubic-bezier(.2,.7,.2,1) both, glow 2.4s 1.6s ease-in-out infinite; }
+    .slide.active .mantra span { animation: slam .6s cubic-bezier(.2,1.4,.4,1) both; animation-delay: calc(200ms + var(--i, 0) * 420ms); }
+    .slide.active .stop .pin { animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; animation-delay: calc(400ms + var(--i, 0) * 160ms); }
+    .slide.active .stop.final .pin { animation: pop .5s cubic-bezier(.3,1.6,.5,1) both, glow 2.4s 2s ease-in-out infinite; }
+    .slide.active .vote div { animation: pop .5s cubic-bezier(.3,1.6,.5,1) both; animation-delay: calc(500ms + var(--i, 0) * 200ms); }
+    .stripe { animation: stripe 3s linear infinite; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  @keyframes rise { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+  @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  @keyframes kb { from { transform: scale(1.12); } to { transform: scale(1); } }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  @keyframes glow { 50% { box-shadow: 0 0 0 10px rgba(241, 197, 0, 0.25); } }
+  @keyframes slam { from { opacity: 0; transform: scale(1.3) translateX(-4%); } to { opacity: 1; transform: none; } }
+  @keyframes stripe { to { background-position: 64px 0; } }
+
+  /* Controls */
+  .hud { position: fixed; right: max(16px, 2vw); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; align-items: center; font: 700 12px/1 var(--font); letter-spacing: 0.06em; z-index: 10; }
+  .hud button { font: inherit; letter-spacing: inherit; text-transform: uppercase; background: var(--night); color: var(--ink); border: 1px solid var(--line); padding: 9px 12px; cursor: pointer; }
+  .hud button:hover { border-color: var(--gold); }
+  .hud button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .hud button[aria-pressed="true"] { background: var(--gold); color: var(--brown); border-color: var(--gold); }
+  #counter { color: var(--ink); font-variant-numeric: tabular-nums; background: rgba(var(--night-rgb), .75); padding: 9px 8px; }
+  .progress { position: fixed; left: 0; top: env(safe-area-inset-top, 0px); height: 4px; background: var(--gold); z-index: 11; width: 0; transition: width .3s; }
+</style>
+
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<!-- 1 Title -->
+<section class="slide bottom" id="title">
+  <div class="bleed kb" aria-hidden="true">
+    <video src="vision-media/blazer-loop.mp4" poster="vision-media/blazer-road.jpg" autoplay muted loop playsinline preload="auto"></video>
+  </div>
+  <div class="brandbar rv">
+    <img class="wmu" src="vision-media/wmu-logo-reversed.svg" alt="Western Michigan University">
+    <img class="eco" src="vision-media/ecocar-logo-white.png" alt="EcoCAR Innovation Challenge">
+  </div>
+  <h1 class="rv" style="--i:1">Safe hardware. <span class="line2">Killer software.</span></h1>
+  <p class="lede rv" style="--i:2;max-width:74ch">Standing shoulder to shoulder with Georgia Tech, Ohio State and the best universities in North America: our underdog strategy to win real money</p>
+  <p class="meta rv" style="--i:3">Zachary D. Asher, PhD · WMU EcoCAR Lead Faculty Advisor</p>
+  <aside class="notes">No thanks, no bio, no agenda. Let the car loop for a beat and go straight to the next slide.</aside>
+</section>
+
+<!-- 2 Hook -->
+<section class="slide night" id="hook">
+  <p class="statement rv">Soon, you won't need to know how to code to build software.</p>
+  <div class="vote">
+    <div class="yes" style="--i:0">Agree</div>
+    <div class="no" style="--i:1">Disagree</div>
+  </div>
+  <aside class="notes">Read it, then ask for hands: agree, then disagree. Count them out loud and call out the split ("the computer science majors are nervous"). Invite one person from each side to say why in one sentence. Don't resolve it. Say: "Hold that thought. By the end you'll see which side we're betting on." The payoff is slide 8. Backups if you want a different split: "Self-driving cars will be safer than human drivers by 2030." or "A team of students can out-engineer teams with 30 years of experience."</aside>
+</section>
+
+<!-- 3 The field -->
+<section class="slide" id="field">
+  <h2 class="rv" style="max-width:none">These are the teams to beat. <em>Should be a walk in the park.</em></h2>
+  <div class="teams">
+    <figure style="--i:0"><img src="vision-media/team-gatech.jpg" alt=""><figcaption>Georgia Tech</figcaption></figure>
+    <figure style="--i:1"><img src="vision-media/team-vt.jpg" alt=""><figcaption>Virginia Tech</figcaption></figure>
+    <figure style="--i:2"><img src="vision-media/team-psu.jpg" alt=""><figcaption>Penn State</figcaption></figure>
+    <figure style="--i:3"><img src="vision-media/team-osu.jpg" alt=""><figcaption>Ohio State</figcaption></figure>
+    <figure class="us" style="--i:4"><img src="vision-media/team-wmu.jpg" alt=""><figcaption>Western Michigan</figcaption></figure>
+  </div>
+  <div class="facts rv" style="--i:2">
+    <div><b data-count="1988">1988</b><span>first competition</span></div>
+    <div><b data-count="34000" data-suffix="+">34,000+</b><span>alumni</span></div>
+    <div><b>20</b><span>universities in all</span></div>
+    <div><b>WMU</b><span>the only Michigan team</span></div>
+  </div>
+  <aside class="notes">For newcomers: EcoCAR is the Department of Energy's student vehicle competition, run by Argonne National Laboratory with GM, Stellantis and MathWorks. It is the 15th Advanced Vehicle Technology Competition since 1988. One of my favorite things about it: it puts WMU on the same stage as these schools. These are not the only teams; there are 20. These are the ones I see as our real competition, the ones we go head-to-head with. Georgia Tech, Virginia Tech and Penn State are on our GM track. Ohio State is on the Stellantis track, but all 20 teams compete head-to-head in the startup track, so yes, we get to take on Ohio. Of all 20 schools, we are the only one in Michigan. Photos: Matthew LaVere Photography for AVTC. Source: EcoCAR Key Messages, Aug 2026.</aside>
+</section>
+
+<!-- 3b Money -->
+<section class="slide gold" id="money">
+  <p class="money rv"><span data-count="150000" data-prefix="$">$150,000</span></p>
+  <h2 class="rv" style="--i:1;max-width:none;color:var(--brown)">in prize money. <em style="color:var(--brown);text-decoration:underline;text-decoration-thickness:6px;text-underline-offset:8px">Every year.</em></h2>
+  <p class="lede rv" style="--i:2;color:var(--brown)">$600,000 on the table over four years.</p>
+  <aside class="notes">Let this land. Each year about $150,000 in cash prizes is awarded to teams across the competition, at the awards ceremony at the year-end competition. Over four years that is roughly $600,000. On top of that, every team already receives $20,000 in seed money in Year 1 and $95,000 a year in sponsor support for student positions. We can't promise to win, and we don't need that pressure, but I want us competing for that money. Source: EcoCAR RFP Rev B, sections A-2.1 and B-1.</aside>
+</section>
+
+<!-- 4 Powertrain: their turf -->
+<section class="slide night" id="their-turf">
+  <h2 class="rv" style="max-width:none">Powertrain is <em>their home turf.</em></h2>
+  <div class="split">
+    <div class="copy">
+      
+      <p class="lede rv" style="--i:1">Since 1988 this competition has been about re-engineering powertrains. The legacy teams have decades of alumni, garages and test data.</p>
+      <p class="rv" style="--i:2;font:900 clamp(26px,2.6vw,44px)/1.1 var(--font);color:var(--gold)">So we play it safe.</p>
+      <ul class="lines rv" style="--i:3">
+        <li>The simplest, most proven design</li>
+        <li>The stock front motor is our baseline</li>
+        <li>Finish early, then perfect it</li>
+        <li>Learn from local partners like Eaton and Intrepid Control Systems</li>
+      </ul>
+    </div>
+    <div class="photo wide kb rv" style="--i:2"><img src="vision-media/under-car.jpg" alt="A student inspecting the underside of a raised electric vehicle"></div>
+  </div>
+  <aside class="notes">Honest and calm. We are at a huge disadvantage here and we say so. So the powertrain plan is the easiest possible approach that earns the points for the lowest risk. The rules call the unmodified front drive unit "a reliable baseline," and organizers approve every rear propulsion design on feasibility and risk, so simple wins that gate. These points are ours to lose, and we will not lose them. Lean on our local companies and WMU supporters, like Eaton (whose Marshall proving grounds we already use) and Intrepid Control Systems, for advice so we do very well on the powertrain side. Photo: EcoCAR stock imagery.</aside>
+</section>
+
+<!-- 5 Software: our turf -->
+<section class="slide" id="our-turf">
+  <h2 class="rv">Self-driving is young here. <em>Commercialization is brand new.</em></h2>
+  <div class="turf rv" style="--i:1" role="img" aria-label="Timeline 1988 to 2030: powertrain since 1988, self-driving mostly demos until 2026, commercialization new in 2026">
+    <div class="row"><span class="name">Powertrain</span><div class="track"><div class="bar dim grow-r" style="left:0;--i:0">since 1988</div></div></div>
+    <div class="row"><span class="name">Self-driving</span><div class="track"><div class="bar faint grow-r" style="left:61.9%;right:9.5%;--i:1">demos &amp; basic driver assist</div><div class="bar hot grow-r" style="left:90.5%;--i:1">Level 4</div></div></div>
+    <div class="row"><span class="name">Commercialization</span><div class="track"><div class="bar hot grow-r" style="left:90.5%;--i:2">new</div></div></div>
+    <div class="axis"><span></span><div><span style="left:0">1988</span><span style="left:90.5%;transform:translateX(-50%)">2026</span><span style="right:0">2030</span></div></div>
+  </div>
+  <p class="rv" style="--i:2;font:900 clamp(28px,3vw,52px)/1.1 var(--font);color:var(--gold)">That's how we finish on top.</p>
+  <aside class="notes">The turn. Self-driving has been mild in past competitions: early series showed off sensor fusion, later ones added basic driver-assist features. Now the target is Level 4, a car that drives itself. The startup track is brand new for everyone this year. Nobody has decades of experience here. We have a self-driving research lab, industry connections, a real startup, and we are AI native.</aside>
+</section>
+
+<!-- 6 The points -->
+<section class="slide night" id="points">
+  <h2 class="rv" style="max-width:none">Powertrain points are there for everyone. <em>Software points pick the winners.</em></h2>
+  <div class="tier rv" style="--i:1">
+    <div class="tier-num dim"><span data-count="220">220</span></div>
+    <div><b>Powertrain &amp; hardware points</b><span>Scored against a checklist. Every team that does the work safely and completely gets them.</span></div>
+  </div>
+  <div class="tier rv" style="--i:2">
+    <div class="tier-num hot"><span data-count="130">130</span><small>of 190</small></div>
+    <div><b>Head-to-head points: self-driving &amp; commercialization</b><span>Scored against the other teams. This is where teams pull ahead or fall behind.</span></div>
+  </div>
+  <div class="points-bar rv" style="--i:3" role="img" aria-label="190 head-to-head points in Year 1 before the competition: 70 self-driving, 60 commercialization, 60 project management">
+    <div class="hot grow" style="flex:70;--i:0">Self-driving 70</div>
+    <div class="hot grow" style="flex:60;--i:1">Commercialization 60</div>
+    <div class="dim grow" style="flex:60;--i:2">Project mgmt 60</div>
+  </div>
+  <aside class="notes">Two kinds of points. Powertrain and hardware points (220 before the May competition) are mostly scored against a fixed checklist: a simple design, done completely and on time, earns nearly all of them, and so does every other competent team. That is why safe hardware is not a compromise. The head-to-head points are scored against the other teams, so they swing. 130 of the 190 head-to-head points are in self-driving and commercialization: a team that nails them pulls ahead, and a team that stumbles gets very few. Pause three seconds after 130. Source: EIC Team Dashboard, Sep 18 2026.</aside>
+</section>
+
+<!-- 7 Mantra -->
+<section class="slide gold" id="mantra">
+  <p class="mantra" aria-label="Safe hardware. Killer software. Have fun."><span style="--i:0">Safe hardware.</span><span style="--i:1">Killer software.</span><span style="--i:2">Have fun.</span></p>
+  <div class="mantra-notes">
+    <div class="rv" style="--i:3"><b>Safe hardware</b>Simple, proven, polished.</div>
+    <div class="rv" style="--i:4"><b>Killer software</b>AI is our superpower: better engineering, faster.</div>
+    <div class="rv" style="--i:5"><b>Have fun</b>If it stops being fun, we change something.</div>
+  </div>
+  <aside class="notes">The mantra, said slowly. "Killer software" includes the powertrain team: the propulsion controls that run our motor are software, and they get built AI fluent too.</aside>
+</section>
+
+<!-- 8 We do this for a living -->
+<section class="slide" id="living">
+  <h2 class="rv" style="max-width:none">AI opened the gates to software. <em>We're jumping in with both feet.</em></h2>
+  <div class="split">
+    <div class="copy">
+      
+      <ul class="lines rv" style="--i:1">
+        <li>Anyone can build software now</li>
+        <li>We work with AI as collaborators, using Claude Code</li>
+        <li>Faster work, better results</li>
+        <li>You understand everything you ship</li>
+        <li>No AI with proprietary data. Ever.</li>
+      </ul>
+    </div>
+    <div class="mosaic top">
+      <figure class="photo kb rv" style="--i:2"><img style="object-position:50% 12%" src="vision-media/asher-niro.jpg" alt="Dr. Asher and a doctoral student with the WMU-branded research car"></figure>
+      <figure class="photo kb rv" style="--i:3"><img src="vision-media/sensor-bumper.jpg" alt="A student adjusting a sensor on a car's front bumper"></figure>
+      <figure class="photo kb rv" style="--i:4"><img src="vision-media/data-laptop.jpg" alt="A student collecting sensor data on a laptop inside a research car"></figure>
+    </div>
+  </div>
+  <aside class="notes">Payoff for the opening question: this is the side we are betting on. AI has taken down the gates to software development; it is the key that unlocks building software for most people. We embrace that world-changing opportunity and jump in with both feet. This is not about generating sloppy code nobody understands. We work faster, more efficiently and with better outcomes because we collaborate with AI. You still own and understand everything you ship. The last line is absolute: GM, sponsor and partner data never goes into an AI tool outside our own machines. Tell one personal story here, about 60 seconds, from the Automated Driving Assurance Lab: our research is proving that self-driving software stays safe across whole ranges of conditions, which is exactly what a buy-off ride tests. The RFP itself says AI will be "pivotal to success throughout all tracks" (section A-2.3). Photos: WMU (bumper and laptop: Paige Novak Photography).</aside>
+</section>
+
+<!-- 8b Overnight -->
+<section class="slide night" id="overnight">
+  <h2 class="rv" style="max-width:none">While we sleep, <em>AI runs thousands of simulations.</em></h2>
+  <div class="farm rv" style="--i:1">
+    <div class="farm-head"><span id="farm-clock">2:47 AM</span><span><b id="farm-count">12,480</b> scenarios tonight</span><span><b id="farm-bugs">37</b> bugs found</span></div>
+    <div class="cells" id="cells" aria-hidden="true"></div>
+  </div>
+  <div class="tasks rv" style="--i:2"><span>Design</span><span>Modeling</span><span>Testing</span><span>Validation</span><span>Analysis</span></div>
+  <p class="lede rv" style="--i:3;max-width:none">AI runs the experiments. We make the engineering calls. <strong style="color:var(--gold)">That's Silicon Valley's normal, and our north star.</strong></p>
+  <aside class="notes">Paint the picture. AI isn't only a tool you type into. It works alongside us through the whole process: it helps design, builds models, writes and runs tests, validates, and analyzes results. Every night, massive parallel autonomous simulations run on our GPU servers, and in the morning we read what broke. Each square here is one simulated drive; gold passed, orange found a problem for us to fix before the car ever does. The numbers on screen are illustrative, not measured. This is how the best software companies in Silicon Valley work, and that is the standard we hold ourselves to.</aside>
+</section>
+
+<!-- 9 PIT -->
+<section class="slide night" id="pit">
+  <h2 class="rv" style="max-width:none">Other teams will pretend to be a startup. <em>We are one.</em></h2>
+  <div class="split">
+    <div class="copy">
+      <div class="proof">
+        <div class="rv" style="--i:1"><b data-count="120" data-suffix="+">120+</b><span>customer interviews done</span></div>
+        <div class="rv" style="--i:2"><b>Now</b><span>in talks with first customers</span></div>
+        <div class="rv" style="--i:3"><b>Nov 2027</b><span>first revenue planned<br>(NSF SBIR Phase I)</span></div>
+        <div class="rv" style="--i:4"><b data-count="3">3</b><span>WMU alumni hired full-time by my last startup</span></div>
+      </div>
+      <p class="rv muted" style="--i:5;font-weight:700">Investors, MEDC and the SBDC: those relationships are already in place.</p>
+    </div>
+    <div style="display:grid;gap:14px">
+      <div class="photo rv" style="--i:2;aspect-ratio:884/274"><video src="vision-media/night-steering.mp4" poster="vision-media/night-steering.jpg" autoplay muted loop playsinline aria-label="Two simulated night drives on a highway: one network drifts out of its lane, the other holds it"></video></div>
+      <div class="rv" style="--i:3;display:flex;align-items:center;gap:18px;flex-wrap:wrap"><img style="height:40px;width:auto" src="vision-media/outres-wordmark.svg" alt="OutRes"><span style="font-weight:800;font-size:1.15em">Test driving alone cannot prove safety.</span></div>
+    </div>
+  </div>
+  <aside class="notes">The startup track is brand new, and every other team will be role-playing a startup. Ours is real. Outlier Resilience proves self-driving software is safe in the conditions nobody tested. It has more than 120 customer discovery interviews, we are in talks with initial customers, and we plan first revenue in November 2027 from an NSF SBIR Phase I. I have the local business relationships (MEDC, SBDC, SmartZones, Newlab Detroit), I know how to pitch investors, and I know investors. Before this I founded Revision Autonomy, which employed three WMU alumni full-time at competitive salaries. The video is research from the Automated Driving Assurance Lab: at night, one network leaves its lane on every run; the other holds it.</aside>
+</section>
+
+<!-- 10 Michigan -->
+<section class="slide" id="michigan">
+  <h2 class="rv" style="max-width:none">The final exam is at GM Milford. <em>Two hours from here.</em></h2>
+  <div class="split">
+    <div class="copy">
+      
+      <ul class="lines rv" style="--i:1">
+        <li>The only Michigan team of 20</li>
+        <li>GM, DENSO, Eaton and Intrepid are a short drive away</li>
+        <li>Every company you meet is a potential career</li>
+        <li>Next up: Intelligent Vehicle Expo, Novi, Oct 27–29</li>
+      </ul>
+    </div>
+    <div class="mosaic top">
+      <figure class="photo kb rv" style="--i:2"><img src="vision-media/milford.jpg" alt="Dr. Meyer and Dr. Asher beside the GM Milford Proving Ground sign"></figure>
+      <figure class="photo kb rv" style="--i:3"><img src="vision-media/sae-wcx.jpg" alt="WMU students at the SAE WCX conference in Detroit"></figure>
+      <figure class="photo kb rv" style="--i:4"><img src="vision-media/eaton-track-crop.jpg" alt="A pickup truck on the Eaton proving grounds paved test track"></figure>
+    </div>
+  </div>
+  <aside class="notes">We are the only Michigan school of the 20, and the final buy-off ride is on GM's Milford Proving Ground. Already with us: Eaton's proving grounds in Marshall (bottom right), plus Dana, Lubrizol, Parker Hannifin, DENSO, Gentex, Hitachi and Intertek; for the startup track, Newlab Detroit, MEDC, the SBDC and the SmartZones. Next up: the Intelligent Vehicle Expo in Novi, Oct 27–29. GM alone has hired about 300 EcoCAR alumni. Ask every member to make one industry contact a month and log it. Photos: WMU.</aside>
+</section>
+
+<!-- 11 Year 1 -->
+<section class="slide night" id="year1">
+  <div class="bleed kb sa" aria-hidden="true"><img src="vision-media/san-antonio.jpg" alt=""></div>
+  <h2 class="rv">Early wins this fall. <em>Then San Antonio.</em></h2>
+  <div class="rv" style="--i:1">
+    <div class="phase"><span>Fall: early wins</span><span>Spring: the payoff</span></div>
+    <div class="rail"><i class="grow"></i></div>
+    <div class="stops">
+      <div class="stop" style="--i:0"><span class="pin"></span><span class="d">Nov 20</span><span class="w">Self-driving architecture</span></div>
+      <div class="stop" style="--i:1"><span class="pin"></span><span class="d">Dec 10</span><span class="w">Virtual vehicle</span></div>
+      <div class="stop spring" style="--i:2"><span class="pin"></span><span class="d">Feb 11</span><span class="w">Baseline vehicle testing</span></div>
+      <div class="stop spring" style="--i:3"><span class="pin"></span><span class="d">Feb 25</span><span class="w">Perception simulation</span></div>
+      <div class="stop spring" style="--i:4"><span class="pin"></span><span class="d">Apr 1</span><span class="w">Powertrain architecture</span></div>
+      <div class="stop spring" style="--i:5"><span class="pin"></span><span class="d">Apr 29</span><span class="w">Cruise control &amp; lane centering</span></div>
+      <div class="stop final" style="--i:6"><span class="pin"></span><span class="d">May 21–27</span><span class="w">San Antonio: $150,000 in prizes</span></div>
+    </div>
+  </div>
+  <div class="chip rv" style="--i:3"><b id="days-left">52</b> days to our first big win</div>
+  <p class="credit">Photo: “San Antonio blue hour” by Katie Haugland Bowen, CC BY 2.0</p>
+  <aside class="notes">The two architecture decisions are the big ones: self-driving architecture on Nov 20 (70 points, scored head-to-head) and powertrain architecture on Apr 1 (70 points, and a risk gate the organizers must approve). Celebrate every fall win out loud; early wins create belief for San Antonio. Both architecture reviews are 70 points; the others are 25–35 (Team Dashboard, Sep 18). The day count is from the talk date, Oct 7, to Nov 20.</aside>
+</section>
+
+<!-- 12 2030 -->
+<section class="slide" id="finale">
+  <h2 class="rv">2030: nail the buy-off ride. <em>Own the autonocross.</em></h2>
+  <div class="events">
+    <div class="event rv" style="--i:1">
+      <div class="view">
+        <svg id="city" viewBox="0 0 600 340" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Top-down city streets: our car follows a route through intersections with stop signs while other cars drive past">
+          <rect width="600" height="340" fill="#1b100b"></rect>
+          <g fill="#3a2419">
+            <rect x="0" y="0" width="80" height="50"></rect><rect x="120" y="0" width="160" height="50"></rect><rect x="320" y="0" width="160" height="50"></rect><rect x="520" y="0" width="80" height="50"></rect>
+            <rect x="0" y="90" width="80" height="60"></rect><rect x="120" y="90" width="160" height="60"></rect><rect x="320" y="90" width="160" height="60"></rect><rect x="520" y="90" width="80" height="60"></rect>
+            <rect x="0" y="190" width="80" height="60"></rect><rect x="120" y="190" width="160" height="60"></rect><rect x="320" y="190" width="160" height="60"></rect><rect x="520" y="190" width="80" height="60"></rect>
+            <rect x="0" y="290" width="80" height="50"></rect><rect x="120" y="290" width="160" height="50"></rect><rect x="320" y="290" width="160" height="50"></rect><rect x="520" y="290" width="80" height="50"></rect>
+          </g>
+          <g stroke="#b4aea7" stroke-width="1.5" stroke-dasharray="8 8" opacity="0.45" fill="none">
+            <path d="M0 70 H600 M0 170 H600 M0 270 H600 M100 0 V340 M300 0 V340 M500 0 V340"></path>
+          </g>
+          <g fill="#B40000" stroke="#fff" stroke-width="1.5">
+            <polygon points="286,250 292,244 300,244 306,250 306,258 300,264 292,264 286,258" transform="translate(-4,-2) scale(1)"></polygon>
+            <polygon points="486,150 492,144 500,144 506,150 506,158 500,164 492,164 486,158"></polygon>
+            <polygon points="86,150 92,144 100,144 106,150 106,158 100,164 92,164 86,158"></polygon>
+          </g>
+          <path id="route" d="M 20 278 H 292 V 178 H 492 V 78 H 590" fill="none" stroke="#F1C500" stroke-width="3" stroke-dasharray="10 8" opacity="0.6"></path>
+          <g id="other1"><rect x="-9" y="-16" width="18" height="32" rx="4" fill="#ffffff"></rect>
+            <animateMotion class="anim" dur="5s" repeatCount="indefinite" path="M 108 360 V -20"></animateMotion></g>
+          <g id="other2"><rect x="-16" y="-9" width="32" height="18" rx="4" fill="#ffffff"></rect>
+            <animateMotion class="anim" dur="7s" repeatCount="indefinite" path="M 620 162 H -20"></animateMotion></g>
+          <circle r="5" fill="#b4aea7"><animateMotion class="anim" dur="4s" repeatCount="indefinite" path="M 500 290 V 250 M 500 250 V 290"></animateMotion></circle>
+          <g id="egocar"><rect x="-16" y="-9" width="32" height="18" rx="4" fill="#F1C500"></rect><rect x="4" y="-7" width="8" height="14" rx="2" fill="#532E1F"></rect>
+            <animateMotion class="anim" dur="9s" repeatCount="indefinite" rotate="auto"><mpath href="#route"></mpath></animateMotion></g>
+        </svg>
+        <span class="tag">HD map · real traffic</span>
+      </div>
+      <b>Buy-off ride</b>
+      <span class="cap">Milford's city streets. A judge on board.</span>
+    </div>
+    <div class="event rv" style="--i:2">
+      <div class="view">
+        <svg id="course" viewBox="0 0 600 340" preserveAspectRatio="xMidYMid meet" role="img" aria-label="A top-down cone course on blacktop with our car driving the line by itself">
+          <rect width="600" height="340" fill="#1b100b"></rect>
+          <g id="cones"></g>
+          <path id="racing-line" d="M 20 270 C 90 270, 110 80, 180 80 S 260 260, 330 245 S 410 70, 470 80 S 560 200, 585 200" fill="none" stroke="#F1C500" stroke-width="3" stroke-dasharray="10 8" opacity="0.55"></path>
+          <g><rect x="-16" y="-9" width="32" height="18" rx="4" fill="#F1C500"></rect><rect x="4" y="-7" width="8" height="14" rx="2" fill="#532E1F"></rect>
+            <animateMotion class="anim" dur="6s" repeatCount="indefinite" rotate="auto"><mpath href="#racing-line"></mpath></animateMotion></g>
+        </svg>
+        <span class="tag">No map · just cones</span>
+        <span class="timer" id="lap">0:00.00</span>
+      </div>
+      <b>Autonocross</b>
+      <span class="cap">A blacktop and cones. Fastest time wins.</span>
+    </div>
+  </div>
+  <p class="lede rv" style="--i:3;max-width:none">This is how we win: <strong style="color:var(--gold)">focus here, and execute.</strong></p>
+  <p class="eco-line rv" style="--i:4">Also judged on energy efficiency and passenger comfort.</p>
+  <aside class="notes">Read slowly. "It's spring 2030. Two tests. First, the buy-off ride: our Blazer drives a judge through the city section of GM's Milford Proving Ground, with street signs, intersections and other vehicles moving around it, using the HD map we're given. Then the autonocross: no map at all. A huge blacktop, a course made of traffic cones, and one goal: as fast as possible, with nobody steering. Every line of code in that car was written by someone who walked into a room like this one not sure they belonged." In industry, a buy-off ride is when an engineer rides along and signs off that a feature is ready. The self-driving system is also judged on energy efficiency and consumer acceptance. They are not where we aim to win, but we build them into how we test every week so we never give those points away. And the buy-off ride is a safety sign-off, which is exactly what the Automated Driving Assurance Lab researches. That is a goal, not a promise.</aside>
+</section>
+
+<!-- 13 Rules -->
+<section class="slide night" id="rules">
+  <h2 class="rv" style="max-width:none">Five rules. <em>No permission needed.</em></h2>
+  <div class="split">
+    <div class="copy">
+      <ol class="rules rv" style="--i:1">
+        <li><b>1</b>Proven hardware</li>
+        <li><b>2</b>Killer software, shared freely</li>
+        <li><b>3</b>AI is our foundation. Proprietary data never touches it</li>
+        <li><b>4</b>Every company is a potential career</li>
+        <li><b>5</b>Have fun, make lifelong friends</li>
+      </ol>
+    </div>
+    <div class="photo wide kb rv" style="--i:2"><img src="vision-media/wmu-lab.jpg" alt="Students working at computers in the WMU automotive lab beside research vehicles"></div>
+  </div>
+  <aside class="notes">If a choice fits these five rules, make it; you don't need to ask. Say the mantra again and let the room finish it. Rule 5: we don't carry the pressure of the powerhouse programs, and that is a freedom. Let's have fun. The people on this team may be your friends for life. Every week ends with a fun check (one to five fingers); two low weeks in a row and we re-evaluate what we're doing. As Van Wilder put it: "Don't take life too seriously. You'll never get out of it alive." The full version lives on the one-page vision doc.</aside>
+</section>
+
+<!-- 16 Join -->
+<section class="slide night" id="join">
+  <h2 class="rv" style="max-width:none">Everyone is welcome. <em>Here's where it leads.</em></h2>
+  <div class="grid g3">
+    <div class="stat rv" style="--i:1"><b data-count="11500" data-prefix="$">$11,500</b><span>higher starting salary</span></div>
+    <div class="stat rv" style="--i:2"><b data-count="34000" data-suffix="+">34,000+</b><span>EcoCAR alumni in the network</span></div>
+    <div class="stat rv" style="--i:3"><b data-count="160">160</b><span>companies hired alumni in 2025</span></div>
+  </div>
+  <div class="logos rv" style="--i:4">
+    <img src="vision-media/logos/doe.png" alt="U.S. Department of Energy">
+    <img src="vision-media/logos/argonne.svg" alt="Argonne National Laboratory">
+    <img src="vision-media/logos/gm.svg" alt="GM">
+    <img src="vision-media/logos/stellantis.svg" alt="Stellantis">
+    <img src="vision-media/logos/mathworks.svg" alt="MathWorks">
+    <img src="vision-media/logos/caterpillar.svg" alt="Caterpillar">
+    <img src="vision-media/logos/siemens.svg" alt="Siemens">
+    <img src="vision-media/logos/dspace.svg" alt="dSPACE">
+    <img src="vision-media/logos/bosch.svg" alt="Bosch">
+    <img src="vision-media/logos/altec.png" alt="Altec">
+    <img src="vision-media/logos/hesse.png" alt="Hesse Mechatronics">
+    <img src="vision-media/logos/volta.svg" alt="Volta Foundation">
+    <img src="vision-media/logos/denso.svg" alt="DENSO">
+    <img src="vision-media/logos/intrepid.png" alt="Intrepid Control Systems">
+  </div>
+  <p class="lede rv" style="--i:5;max-width:none">Offers from Detroit to Silicon Valley. Any major, any year, any background. <strong style="color:var(--gold)">Find Jacob Russell after the talk to get started.</strong></p>
+  <aside class="notes">Winning means respect, from the other schools and from industry. The long-term outcome: the students on this team, right now, get snatched up by industry with competitive offers and opportunities all over the country, including Silicon Valley. I am the newly appointed chair of the WMU Silicon Valley Industry Advisory Board, so that door is open. The sponsors go well beyond the Department of Energy: GM, Stellantis, MathWorks, Caterpillar, Siemens, dSPACE, Bosch, Altec, Hesse Mechatronics and the Volta Foundation, plus companies like DENSO and Intrepid Control Systems, and they meet our students at every event. GM alone has hired about 300 EcoCAR alumni. The EcoCAR alumni network is incredible. Whoever you are, there is a place on this team: self-driving, AI and data, business and commercialization, powertrain and hardware, media and storytelling, industry and events. Ask the leads to stand: Dr. Rick Meyer (co-lead), Jacob Russell (project manager), Jonathan Girier-Dufournier (vehicle hardware), Charles Rodgers (self-driving), Menuka Ghalan (AI and commercialization), Adam Luck (marketing and communications), Cassie Poisson and Emily Holtz (undergraduate leads). Point people to Jacob to get started. Sources: salary from the EcoCAR Key Messages, Aug 2026 (4-year study, 2023–2026; AVTC's site says $12,500); GM hires from GM News, Apr 14 2026. Say "this is how you get noticed," never "you will get hired."</aside>
+</section>
+
+<!-- 16 Close -->
+<section class="slide gold" id="close">
+  <div class="stripe" aria-hidden="true"></div>
+  <p class="vision rv">Be the team everyone learns from.</p>
+  <p class="kicker rv" style="--i:1">Safe hardware. Killer software. Have fun.</p>
+  <aside class="notes">Take Q&amp;A with this slide up. Do not end on "Questions?" Close with: "Safe hardware. Killer software. Have fun. Dare to be great." Then walk off.</aside>
+</section>
+
+<nav class="hud" aria-label="Slide controls">
+  <button type="button" id="prev" aria-label="Previous slide">&larr;</button>
+  <span id="counter" aria-live="polite">1 / 17</span>
+  <button type="button" id="next" aria-label="Next slide">&rarr;</button>
+  <button type="button" id="notes-toggle" aria-pressed="false">Notes</button>
+</nav>
+
+<script>
+  (function () {
+    var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+    var counter = document.getElementById("counter");
+    var progress = document.getElementById("progress");
+    var notesBtn = document.getElementById("notes-toggle");
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    // Days to the Nov 20 design review.
+    var daysEl = document.getElementById("days-left");
+    var daysLeft = Math.round((new Date(2026, 10, 20) - new Date(2026, 9, 7)) / 86400000); // from the talk (Wed Oct 7) to the Nov 20 review
+    daysEl.textContent = daysLeft;
+    daysEl.setAttribute("data-count", daysLeft);
+
+    // Autonocross: place cones on both sides of the racing line.
+    var line = document.getElementById("racing-line");
+    var cones = document.getElementById("cones");
+    var len = line.getTotalLength(), ns = "http://www.w3.org/2000/svg";
+    for (var d = 12; d < len - 6; d += 26) {
+      var p = line.getPointAtLength(d), q = line.getPointAtLength(Math.min(len, d + 1));
+      var dx = q.x - p.x, dy = q.y - p.y, m = Math.hypot(dx, dy) || 1;
+      [-1, 1].forEach(function (side) {
+        var c = document.createElementNS(ns, "circle");
+        c.setAttribute("cx", (p.x - side * dy / m * 26).toFixed(1));
+        c.setAttribute("cy", (p.y + side * dx / m * 26).toFixed(1));
+        c.setAttribute("r", "4.5"); c.setAttribute("fill", "#E56849");
+        c.setAttribute("stroke", "#ffffff"); c.setAttribute("stroke-width", "1.5");
+        cones.appendChild(c);
+      });
+    }
+    var lap = document.getElementById("lap");
+    var course = document.getElementById("course");
+    if (reduce) {
+      document.querySelectorAll("animateMotion.anim").forEach(function (a) {
+        var g = a.parentNode, path = a.querySelector("mpath"), pt;
+        if (path) { var el = document.querySelector(path.getAttribute("href")); pt = el.getPointAtLength(el.getTotalLength() * 0.55); g.setAttribute("transform", "translate(" + pt.x + "," + pt.y + ")"); }
+        g.removeChild(a);
+      });
+      lap.textContent = "0:05.94";
+    } else {
+      (function tick() {
+        var t = (course.getCurrentTime ? course.getCurrentTime() : 0) % 6;
+        lap.textContent = "0:0" + t.toFixed(2);
+        requestAnimationFrame(tick);
+      })();
+    }
+
+    // Overnight simulation farm: 192 cells, most passed, a few bugs; live cycling when motion is allowed.
+    var cellsEl = document.getElementById("cells"), cells = [];
+    function seeded(i) { var x = Math.sin(i * 12.9898) * 43758.5453; return x - Math.floor(x); }
+    for (var ci = 0; ci < 192; ci++) {
+      var cell = document.createElement("i");
+      var r = seeded(ci);
+      cell.className = r < 0.06 ? "bug" : (r < 0.9 ? "ok" : "");
+      cellsEl.appendChild(cell); cells.push(cell);
+    }
+    if (!reduce) {
+      var count = 12480, bugs = 37, mins = 2 * 60 + 47;
+      var cEl = document.getElementById("farm-count"), bEl = document.getElementById("farm-bugs"), clk = document.getElementById("farm-clock");
+      setInterval(function () {
+        if (!document.getElementById("overnight").classList.contains("active")) return;
+        for (var k = 0; k < 6; k++) {
+          var c = cells[Math.floor(Math.random() * cells.length)];
+          if (c.className === "run") { var bug = Math.random() < 0.05; c.className = bug ? "bug" : "ok"; count++; if (bug) bugs++; }
+          else c.className = "run";
+        }
+        cEl.textContent = count.toLocaleString("en-US"); bEl.textContent = bugs;
+        mins = (mins + 1) % (24 * 60);
+        var h = Math.floor(mins / 60), m = mins % 60, ap = h < 12 ? "AM" : "PM", hh = h % 12 || 12;
+        clk.textContent = hh + ":" + (m < 10 ? "0" : "") + m + " " + ap;
+      }, 120);
+    }
+
+    function current() {
+      var mid = window.innerHeight / 3, idx = 0;
+      slides.forEach(function (s, i) { if (s.getBoundingClientRect().top <= mid) idx = i; });
+      return idx;
+    }
+    function go(i) { i = Math.max(0, Math.min(slides.length - 1, i)); slides[i].scrollIntoView({ block: "start" }); }
+    function countUp(el) {
+      var target = parseFloat(el.getAttribute("data-count"));
+      var suffix = el.getAttribute("data-suffix") || "";
+      var prefix = el.getAttribute("data-prefix") || "";
+      var plain = target >= 1900 && target <= 2100;
+      var fmt = function (n) { return prefix + (plain ? String(n) : n.toLocaleString("en-US")) + suffix; };
+      if (reduce || !isFinite(target)) { if (isFinite(target)) el.textContent = fmt(target); return; }
+      var start = null, dur = 1200, from = plain ? target - 40 : 0;
+      function step(t) {
+        if (start === null) start = t;
+        var p = Math.min(1, (t - start) / dur), e = 1 - Math.pow(1 - p, 3);
+        el.textContent = fmt(Math.round(from + (target - from) * e));
+        if (p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+    function activate(s) {
+      if (s.classList.contains("active")) return;
+      s.classList.add("active");
+      s.querySelectorAll("[data-count]").forEach(countUp);
+      s.querySelectorAll("video").forEach(function (v) { var p = v.play(); if (p && p.catch) p.catch(function () {}); });
+    }
+    function deactivate(s) { s.classList.remove("active"); s.querySelectorAll("video").forEach(function (v) { v.pause(); }); }
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) { if (en.isIntersecting) activate(en.target); else deactivate(en.target); });
+      }, { threshold: 0.45 });
+      slides.forEach(function (s) { io.observe(s); });
+    } else { slides.forEach(function (s) { s.classList.add("active"); }); }
+
+    function update() {
+      var c = current();
+      counter.textContent = (c + 1) + " / " + slides.length;
+      progress.style.width = ((c + 1) / slides.length * 100) + "%";
+    }
+    document.getElementById("prev").addEventListener("click", function () { go(current() - 1); });
+    document.getElementById("next").addEventListener("click", function () { go(current() + 1); });
+    notesBtn.addEventListener("click", function () {
+      var on = document.body.classList.toggle("show-notes");
+      notesBtn.setAttribute("aria-pressed", on ? "true" : "false");
+      try { localStorage.setItem("ecocar-vision-notes", on ? "1" : "0"); } catch (e) {}
+    });
+    try { if (localStorage.getItem("ecocar-vision-notes") === "1") { document.body.classList.add("show-notes"); notesBtn.setAttribute("aria-pressed", "true"); } } catch (e) {}
+    document.addEventListener("keydown", function (e) {
+      if (e.target.closest && e.target.closest("button")) { if (e.key === " " || e.key === "Enter") return; }
+      if (["ArrowRight", "ArrowDown", "PageDown", " "].indexOf(e.key) > -1) { e.preventDefault(); go(current() + 1); }
+      else if (["ArrowLeft", "ArrowUp", "PageUp"].indexOf(e.key) > -1) { e.preventDefault(); go(current() - 1); }
+      else if (e.key === "Home") { e.preventDefault(); go(0); }
+      else if (e.key === "End") { e.preventDefault(); go(slides.length - 1); }
+      else if (e.key === "n" || e.key === "N") { notesBtn.click(); }
+    });
+    window.addEventListener("scroll", update, { passive: true });
+    update();
+  })();
+</script>
