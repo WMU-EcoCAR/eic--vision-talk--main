@@ -45,11 +45,12 @@
   .donut span { font-weight: 700; font-size: 9pt; white-space: nowrap; }
   .details { border: 3pt solid var(--brown); padding: 10pt 12pt; display: grid; grid-template-columns: 1fr 1fr; gap: 8pt 12pt; align-content: start; }
   .details > div:last-child { grid-column: 1 / -1; }
-  .speaker { display: grid; grid-template-columns: 0.66in minmax(0, 1fr); gap: 7pt; align-items: center; }
-  .speaker img { width: 0.66in; height: 0.66in; object-fit: cover; border-radius: 50%; border: 2pt solid var(--gold); }
+  .speaker { display: grid; grid-template-columns: 0.9in minmax(0, 1fr); gap: 9pt; align-items: start; }
+  .speaker img { width: 0.9in; height: 1.2in; object-fit: cover; object-position: 50% 20%; border-radius: 8pt; border: 2pt solid var(--gold); }
   .details .label { font-weight: 800; font-size: 8pt; letter-spacing: 0.16em; text-transform: uppercase; color: var(--taupe); }
   .details .val { font-weight: 900; font-size: 14pt; line-height: 1.1; }
-  .details .who { font-weight: 600; font-size: 8.2pt; line-height: 1.32; white-space: nowrap; }
+  .details .who { font-weight: 600; font-size: 8.4pt; line-height: 1.25; white-space: nowrap; display: grid; gap: 5pt; }
+  .details .who span:first-child { font-weight: 800; }
 
   .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.2in; padding: 0.12in 0.5in; border-top: 1pt solid var(--gray); margin-top: 0.12in; }
   .stats b { display: block; font-weight: 900; font-size: 20pt; line-height: 1; }
@@ -98,7 +99,7 @@
       <div class="details">
         <div><div class="label">When</div><div class="val">Wed, Oct 7</div><div class="val">11:00 AM</div></div>
         <div><div class="label">Where</div><div class="val">D-201</div><div class="val">Floyd Hall</div></div>
-        <div class="speaker"><img src="../vision-media/asher-headshot.jpg" alt="Zachary D. Asher"><div><div class="label">Speaker</div><div class="who">Zachary D. Asher, PhD<br>WMU EcoCAR Lead Faculty Advisor<br>Director, Automated Driving<br>Assurance Lab<br>Chair, WMU Silicon Valley<br>Industry Advisory Board</div></div></div>
+        <div class="speaker"><img src="../vision-media/asher-headshot.jpg" alt="Zachary D. Asher"><div><div class="label">Speaker</div><div class="who"><span>Zachary D. Asher, PhD</span><span>WMU EcoCAR Lead Faculty Advisor</span><span>Director, Automated Driving<br>Assurance Lab</span><span>Chair, WMU Silicon Valley<br>Industry Advisory Board</span></div></div></div>
       </div>
 
     </div>
